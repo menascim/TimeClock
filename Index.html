@@ -5,7 +5,7 @@
      crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relógio e Cronômetro com Globo Interativo</title>
+    <title>Relógio e Cronômetro</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,7 +13,6 @@
             flex-direction: column;
             align-items: center;
             background-color: #f0f0f0;
-            padding: 20px;
         }
 
         .container {
@@ -23,8 +22,6 @@
             background-color: white;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            max-width: 400px;
-            width: 100%;
         }
 
         #clock {
@@ -33,39 +30,33 @@
             color: #333;
         }
 
-        /* Estilos para o Globo */
-        .globo-container {
-            margin-top: 20px;
-            position: relative;
-            width: 500px;
-            height: 300px;
+        .stopwatch {
+            font-size: 36px;
+            margin: 20px;
         }
 
-        .tooltip {
-            position: absolute;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 8px 12px;
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
             border-radius: 5px;
-            font-size: 14px;
-            display: none;
-            pointer-events: none;
-        }
-
-        svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        path {
-            fill: #ccc;
-            stroke: #333;
-            stroke-width: 0.5;
             cursor: pointer;
         }
 
-        path:hover {
-            fill: #999;
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #pauseBtn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        #resetBtn {
+            background-color: #666;
+            color: white;
         }
     </style>
 </head>
@@ -75,72 +66,70 @@
         <div id="clock"></div>
     </div>
 
-    <div class="container globo-container">
-        <h2>Fusos Horários Globais</h2>
-        <div class="tooltip" id="tooltip"></div>
-        <svg id="globo" viewBox="0 0 1000 500">
-            <!-- Brasil -->
-            <path id="brasil" d="M400,250 L420,280 L390,290 Z" />
-            <!-- EUA -->
-            <path id="eua" d="M300,150 L320,170 L310,190 Z" />
-            <!-- Reino Unido -->
-            <path id="uk" d="M500,100 L520,120 L510,140 Z" />
-            <!-- Japão -->
-            <path id="japao" d="M800,200 L820,220 L810,240 Z" />
-            <!-- Austrália -->
-            <path id="australia" d="M850,350 L870,370 L860,390 Z" />
-        </svg>
+    <div class="container">
+        <h1>Cronômetro</h1>
+        <div class="stopwatch">00:00:00<span style="font-size: 20px;">.000</span></div>
+        <button id="startBtn">Iniciar</button>
+        <button id="pauseBtn">Pausar</button>
+        <button id="resetBtn">Resetar</button>
     </div>
 
     <script>
-        // Atualiza Relógio
+        // Relógio
         function updateClock() {
             const now = new Date();
-            document.getElementById('clock').textContent = now.toLocaleTimeString();
-            requestAnimationFrame(updateClock);
+            const timeString = now.toLocaleTimeString();
+            document.getElementById('clock').textContent = timeString;
         }
-        updateClock();
+        setInterval(updateClock, 1000);
+        updateClock(); // Atualizar imediatamente
 
-        // Tooltip para exibir horários
-        const tooltip = document.getElementById("tooltip");
-        const globo = document.getElementById("globo");
+        // Cronômetro
+        let stopwatchInterval;
+        let isRunning = false;
+        let startTime = 0;
+        let elapsedTime = 0;
 
-        // Definição dos fusos horários
-        const timeZones = {
-            "brasil": "America/Sao_Paulo",
-            "eua": "America/New_York",
-            "uk": "Europe/London",
-            "japao": "Asia/Tokyo",
-            "australia": "Australia/Sydney"
-        };
+        const display = document.querySelector('.stopwatch');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
 
-        // Evento de clique nos países
-        document.querySelectorAll("path").forEach(region => {
-            region.addEventListener("click", function(event) {
-                const countryId = event.target.id;
-                if (timeZones[countryId]) {
-                    const now = new Date();
-                    const time = new Intl.DateTimeFormat("pt-BR", {
-                        timeZone: timeZones[countryId],
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit"
-                    }).format(now);
+        function formatTime(milliseconds) {
+            const hrs = Math.floor(milliseconds / 3600000);
+            const mins = Math.floor((milliseconds % 3600000) / 60000);
+            const secs = Math.floor((milliseconds % 60000) / 1000);
+            const ms = milliseconds % 1000;
 
-                    // Posicionamento da tooltip
-                    tooltip.style.display = "block";
-                    tooltip.style.left = event.pageX + "px";
-                    tooltip.style.top = event.pageY + "px";
-                    tooltip.textContent = `${countryId.toUpperCase()}: ${time}`;
-                }
-            });
+            return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+        }
+
+        function updateStopwatch() {
+            const currentTime = Date.now();
+            elapsedTime = currentTime - startTime;
+            display.textContent = formatTime(elapsedTime);
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                startTime = Date.now() - elapsedTime;
+                stopwatchInterval = setInterval(updateStopwatch, 10);
+            }
         });
 
-        // Esconder tooltip ao clicar fora do mapa
-        document.addEventListener("click", function(event) {
-            if (!globo.contains(event.target)) {
-                tooltip.style.display = "none";
+        pauseBtn.addEventListener('click', () => {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(stopwatchInterval);
             }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            isRunning = false;
+            clearInterval(stopwatchInterval);
+            elapsedTime = 0;
+            display.textContent = formatTime(0);
         });
     </script>
 </body>
