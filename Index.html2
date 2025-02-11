@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9928871547695178"
+     crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relógio e Cronômetro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+            margin: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        #clock {
+            font-size: 48px;
+            margin: 20px;
+            color: #333;
+        }
+
+        .stopwatch {
+            font-size: 36px;
+            margin: 20px;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #startBtn:hover {
+            background-color: #45a049;
+        }
+
+        #pauseBtn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        #pauseBtn:hover {
+            background-color: #e53935;
+        }
+
+        #resetBtn {
+            background-color: #666;
+            color: white;
+        }
+
+        #resetBtn:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Relógio</h1>
+        <div id="clock"></div>
+    </div>
+
+    <div class="container">
+        <h1>Cronômetro</h1>
+        <div class="stopwatch">00:00:00<span style="font-size: 20px;">.000</span></div>
+        <button id="startBtn" aria-label="Iniciar cronômetro">Iniciar</button>
+        <button id="pauseBtn" aria-label="Pausar cronômetro">Pausar</button>
+        <button id="resetBtn" aria-label="Resetar cronômetro">Resetar</button>
+    </div>
+
+    <script>
+        // Atualiza Relógio
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString();
+            requestAnimationFrame(updateClock);
+        }
+        updateClock();
+
+        // Cronômetro
+        let stopwatchInterval;
+        let isRunning = false;
+        let startTime = 0;
+        let elapsedTime = 0;
+
+        const display = document.querySelector('.stopwatch');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function formatTime(milliseconds) {
+            const hrs = Math.floor(milliseconds / 3600000);
+            const mins = Math.floor((milliseconds % 3600000) / 60000);
+            const secs = Math.floor((milliseconds % 60000) / 1000);
+            const ms = milliseconds % 1000;
+
+            return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+        }
+
+        function updateStopwatch() {
+            if (isRunning) {
+                elapsedTime = Date.now() - startTime;
+                display.textContent = formatTime(elapsedTime);
+                requestAnimationFrame(updateStopwatch);
+            }
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                startTime = Date.now() - elapsedTime;
+                updateStopwatch();
+            }
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            isRunning = false;
+        });
+
+        resetBtn.addEventListener('click', () => {
+            isRunning = false;
+            elapsedTime = 0;
+            display.textContent = formatTime(0);
+        });
+    </script>
+</body>
+</html>
