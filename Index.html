@@ -5,7 +5,7 @@
      crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relógio e Cronômetro</title>
+    <title>Relógio e Cronômetro com Globo Interativo</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -48,31 +48,33 @@
             transition: background 0.3s;
         }
 
-        #startBtn {
-            background-color: #4CAF50;
+        #startBtn { background-color: #4CAF50; color: white; }
+        #startBtn:hover { background-color: #45a049; }
+        #pauseBtn { background-color: #f44336; color: white; }
+        #pauseBtn:hover { background-color: #e53935; }
+        #resetBtn { background-color: #666; color: white; }
+        #resetBtn:hover { background-color: #555; }
+
+        /* Estilos para o Globo */
+        .globo-container {
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .globo {
+            width: 300px;
+            cursor: pointer;
+        }
+
+        .tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
             color: white;
-        }
-
-        #startBtn:hover {
-            background-color: #45a049;
-        }
-
-        #pauseBtn {
-            background-color: #f44336;
-            color: white;
-        }
-
-        #pauseBtn:hover {
-            background-color: #e53935;
-        }
-
-        #resetBtn {
-            background-color: #666;
-            color: white;
-        }
-
-        #resetBtn:hover {
-            background-color: #555;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            display: none;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -85,9 +87,15 @@
     <div class="container">
         <h1>Cronômetro</h1>
         <div class="stopwatch">00:00:00<span style="font-size: 20px;">.000</span></div>
-        <button id="startBtn" aria-label="Iniciar cronômetro">Iniciar</button>
-        <button id="pauseBtn" aria-label="Pausar cronômetro">Pausar</button>
-        <button id="resetBtn" aria-label="Resetar cronômetro">Resetar</button>
+        <button id="startBtn">Iniciar</button>
+        <button id="pauseBtn">Pausar</button>
+        <button id="resetBtn">Resetar</button>
+    </div>
+
+    <div class="container globo-container">
+        <h2>Fusos Horários Globais</h2>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/ec/World_Map_-_Time_Zones.PNG" class="globo" id="globo" alt="Mapa de Fusos Horários">
+        <div class="tooltip" id="tooltip"></div>
     </div>
 
     <script>
@@ -143,6 +151,44 @@
             isRunning = false;
             elapsedTime = 0;
             display.textContent = formatTime(0);
+        });
+
+        // Horário no Globo
+        const tooltip = document.getElementById("tooltip");
+        const globo = document.getElementById("globo");
+
+        const timeZones = {
+            "Brasil": "America/Sao_Paulo",
+            "Nova York": "America/New_York",
+            "Londres": "Europe/London",
+            "Tóquio": "Asia/Tokyo",
+            "Sydney": "Australia/Sydney",
+            "Moscou": "Europe/Moscow",
+            "Dubai": "Asia/Dubai",
+            "Pequim": "Asia/Shanghai"
+        };
+
+        globo.addEventListener("mousemove", function(event) {
+            const countries = Object.keys(timeZones);
+            const randomCountry = countries[Math.floor(Math.random() * countries.length)];
+            const timeZone = timeZones[randomCountry];
+
+            const now = new Date();
+            const time = new Intl.DateTimeFormat("pt-BR", {
+                timeZone: timeZone,
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            }).format(now);
+
+            tooltip.style.display = "block";
+            tooltip.style.left = event.pageX + 10 + "px";
+            tooltip.style.top = event.pageY + 10 + "px";
+            tooltip.textContent = `${randomCountry}: ${time}`;
+        });
+
+        globo.addEventListener("mouseleave", function() {
+            tooltip.style.display = "none";
         });
     </script>
 </body>
