@@ -62,7 +62,8 @@
         }
 
         .globo {
-            width: 300px;
+            width: 100%;
+            max-width: 500px;
             cursor: pointer;
         }
 
@@ -70,7 +71,7 @@
             position: absolute;
             background-color: rgba(0, 0, 0, 0.8);
             color: white;
-            padding: 5px 10px;
+            padding: 8px 12px;
             border-radius: 5px;
             font-size: 14px;
             display: none;
@@ -153,42 +154,55 @@
             display.textContent = formatTime(0);
         });
 
-        // Horário no Globo
+        // Horário no Globo (clique para mostrar)
         const tooltip = document.getElementById("tooltip");
         const globo = document.getElementById("globo");
 
-        const timeZones = {
-            "Brasil": "America/Sao_Paulo",
-            "Nova York": "America/New_York",
-            "Londres": "Europe/London",
-            "Tóquio": "Asia/Tokyo",
-            "Sydney": "Australia/Sydney",
-            "Moscou": "Europe/Moscow",
-            "Dubai": "Asia/Dubai",
-            "Pequim": "Asia/Shanghai"
-        };
+        const timeZones = [
+            { name: "Brasil", timezone: "America/Sao_Paulo", x: 150, y: 220 },
+            { name: "Nova York", timezone: "America/New_York", x: 200, y: 150 },
+            { name: "Londres", timezone: "Europe/London", x: 280, y: 120 },
+            { name: "Tóquio", timezone: "Asia/Tokyo", x: 450, y: 180 },
+            { name: "Sydney", timezone: "Australia/Sydney", x: 500, y: 250 },
+            { name: "Moscou", timezone: "Europe/Moscow", x: 320, y: 130 },
+            { name: "Dubai", timezone: "Asia/Dubai", x: 350, y: 170 },
+            { name: "Pequim", timezone: "Asia/Shanghai", x: 420, y: 160 }
+        ];
 
-        globo.addEventListener("mousemove", function(event) {
-            const countries = Object.keys(timeZones);
-            const randomCountry = countries[Math.floor(Math.random() * countries.length)];
-            const timeZone = timeZones[randomCountry];
+        globo.addEventListener("click", function(event) {
+            const rect = globo.getBoundingClientRect();
+            const offsetX = event.clientX - rect.left;
+            const offsetY = event.clientY - rect.top;
+
+            let nearest = timeZones[0];
+            let minDist = Infinity;
+
+            timeZones.forEach(zone => {
+                let dist = Math.sqrt(Math.pow(zone.x - offsetX, 2) + Math.pow(zone.y - offsetY, 2));
+                if (dist < minDist) {
+                    minDist = dist;
+                    nearest = zone;
+                }
+            });
 
             const now = new Date();
             const time = new Intl.DateTimeFormat("pt-BR", {
-                timeZone: timeZone,
+                timeZone: nearest.timezone,
                 hour: "2-digit",
                 minute: "2-digit",
                 second: "2-digit"
             }).format(now);
 
             tooltip.style.display = "block";
-            tooltip.style.left = event.pageX + 10 + "px";
-            tooltip.style.top = event.pageY + 10 + "px";
-            tooltip.textContent = `${randomCountry}: ${time}`;
+            tooltip.style.left = event.pageX + "px";
+            tooltip.style.top = event.pageY + "px";
+            tooltip.textContent = `${nearest.name}: ${time}`;
         });
 
-        globo.addEventListener("mouseleave", function() {
-            tooltip.style.display = "none";
+        document.addEventListener("click", function(event) {
+            if (!globo.contains(event.target)) {
+                tooltip.style.display = "none";
+            }
         });
     </script>
 </body>
