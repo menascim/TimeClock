@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relógio e Cronômetro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            text-align: center;
+            margin: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        #clock {
+            font-size: 48px;
+            margin: 20px;
+            color: #333;
+        }
+
+        .stopwatch {
+            font-size: 36px;
+            margin: 20px;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #startBtn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #pauseBtn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        #resetBtn {
+            background-color: #666;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Relógio</h1>
+        <div id="clock"></div>
+    </div>
+
+    <div class="container">
+        <h1>Cronômetro</h1>
+        <div class="stopwatch">00:00:00<span style="font-size: 20px;">.000</span></div>
+        <button id="startBtn">Iniciar</button>
+        <button id="pauseBtn">Pausar</button>
+        <button id="resetBtn">Resetar</button>
+    </div>
+
+    <script>
+        // Relógio
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            document.getElementById('clock').textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // Atualizar imediatamente
+
+        // Cronômetro
+        let stopwatchInterval;
+        let isRunning = false;
+        let startTime = 0;
+        let elapsedTime = 0;
+
+        const display = document.querySelector('.stopwatch');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function formatTime(milliseconds) {
+            const hrs = Math.floor(milliseconds / 3600000);
+            const mins = Math.floor((milliseconds % 3600000) / 60000);
+            const secs = Math.floor((milliseconds % 60000) / 1000);
+            const ms = milliseconds % 1000;
+
+            return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}`;
+        }
+
+        function updateStopwatch() {
+            const currentTime = Date.now();
+            elapsedTime = currentTime - startTime;
+            display.textContent = formatTime(elapsedTime);
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                isRunning = true;
+                startTime = Date.now() - elapsedTime;
+                stopwatchInterval = setInterval(updateStopwatch, 10);
+            }
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(stopwatchInterval);
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            isRunning = false;
+            clearInterval(stopwatchInterval);
+            elapsedTime = 0;
+            display.textContent = formatTime(0);
+        });
+    </script>
+</body>
+</html>
